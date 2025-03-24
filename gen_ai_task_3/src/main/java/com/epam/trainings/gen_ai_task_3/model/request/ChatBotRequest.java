@@ -1,4 +1,4 @@
-package com.epam.trainings.gen_ai_task_3.request;
+package com.epam.trainings.gen_ai_task_3.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,18 +18,24 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(AzureOpenAIProperties.class)
 public class SemanticKernelConfig {
 
-    @Bean
-    @ConditionalOnClass(OpenAIAsyncClient.class)
-    @ConditionalOnMissingBean
-    public OpenAIAsyncClient getOpenAIAsyncClientBean(AzureOpenAIProperties azureOpenAIProperties) {
+    @Bean(name = "getGenericOpenAIAsyncClientBean")
+    public OpenAIAsyncClient getGenericOpenAIAsyncClientBean(AzureOpenAIProperties azureOpenAIProperties) {
         return new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(azureOpenAIProperties.getKey()))
-                .endpoint(azureOpenAIProperties.getEndpoint())
+                .credential(new AzureKeyCredential(azureOpenAIProperties.getGenericKey()))
+                .endpoint(azureOpenAIProperties.getGenericEndPoint())
+                .buildAsyncClient();
+    }
+
+    @Bean(name = "getOpenAIAsyncClientBeanForImageGeneration")
+    public OpenAIAsyncClient getOpenAIAsyncClientBeanForImageGeneration(AzureOpenAIProperties azureOpenAIProperties) {
+        return new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(azureOpenAIProperties.getImageGenerationKey()))
+                .endpoint(azureOpenAIProperties.getImageGenerationEndpoint())
                 .buildAsyncClient();
     }
 
     @Bean
-    public ChatCompletionService getChatCompletionServiceBean(OpenAIAsyncClient openAIAsyncClient,
+    public ChatCompletionService getChatCompletionServiceBean(@Qualifier("getGenericOpenAIAsyncClientBean") OpenAIAsyncClient openAIAsyncClient,
                                                               AzureOpenAIProperties azureOpenAIProperties) {
         return OpenAIChatCompletion.builder()
                 .withModelId(azureOpenAIProperties.getDeploymentName())

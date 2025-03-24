@@ -1,13 +1,14 @@
 package com.epam.trainings.gen_ai_task_3.controller;
 
-import com.epam.trainings.gen_ai_task_3.request.ChatBotRequest;
+import com.epam.trainings.gen_ai_task_3.model.ChatBotResponse;
+import com.epam.trainings.gen_ai_task_3.model.request.ChatBotRequest;
 import com.epam.trainings.gen_ai_task_3.service.GenAIServiceImpl;
-import org.apache.catalina.connector.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -22,11 +23,16 @@ public class GenAiController {
 
     @PostMapping(value = "/prompt", produces = MediaType.TEXT_PLAIN_VALUE)
     public String promptResponse(@RequestBody ChatBotRequest chatBotRequest) {
-        return genAIService.getChatResult(chatBotRequest);
+        return genAIService.getChatResult(chatBotRequest, Optional.empty());
     }
 
     @PostMapping(value = "/generateImage/{prompt}")
     public ResponseEntity<List<String>> generateImage(@RequestParam String prompt) throws ExecutionException, InterruptedException {
         return ResponseEntity.ok(genAIService.generateImage(prompt));
+    }
+
+    @PostMapping(value = "/generate/{model}")
+    public ResponseEntity<ChatBotResponse> generateResponseBasedOnAIModelPassed(@RequestParam String model, @RequestBody ChatBotRequest chatBotRequest) throws ExecutionException, InterruptedException {
+        return ResponseEntity.ok(genAIService.getResponseBasedOnModel(chatBotRequest, model));
     }
 }

@@ -1,6 +1,10 @@
 package com.epam.trainings.gen_ai_task_3.util;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ImageGenerations;
+import com.epam.trainings.gen_ai_task_3.config.AzureOpenAIProperties;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -21,19 +25,11 @@ public class ResponseGenerator {
                 .collect(Collectors.joining("\n\n"));
     }
 
-//    public List<String> getImageUrlsList(Mono<ImageGenerations> images) throws ExecutionException, InterruptedException {
-//        CompletableFuture<List<String>> result = images.map(response -> {
-//            List<String> imageUrls = new ArrayList<>();
-//            for (var image : response.getData()) {
-//                imageUrls.add(image.getUrl());
-//            }
-//            return imageUrls;
-//        }).toFuture(); // Converts Mono<List<String>> to CompletableFuture<List<String>> and then retrieves result using blockingGet
-//
-//        List<String> output = new ArrayList<>();
-//        result.thenAccept(imageUrls -> {
-//            System.out.println("Generated Image URLs: " + imageUrls);
-//            output.add(imageUrls);
-//        });
-//    }
+    public ChatCompletionService getChatCompletionServiceBean(OpenAIAsyncClient openAIAsyncClient,
+                                                              String deploymentName) {
+        return OpenAIChatCompletion.builder()
+                .withModelId(deploymentName)
+                .withOpenAIAsyncClient(openAIAsyncClient)
+                .build();
+    }
 }

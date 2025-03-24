@@ -9,9 +9,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class AzureOpenAIProperties {
 
-    private String key;
+    private String genericKey;
 
-    private String endpoint;
+    private String genericEndPoint;
 
     private String deploymentName;
+
+    private String imageGenerationKey;
+
+    private String imageGenerationEndpoint;
 }
