@@ -54,6 +54,16 @@ public class GenAIServiceImpl implements GenAIService{
         this.deploymentModel = deploymentModel;
     }
 
+    /**
+     * Generates a list of image URLs based on the provided text prompt.
+     * The method uses an asynchronous AI image generation service to create
+     * and retrieve high-quality (HD) images of size 1024x1024 pixels.
+     *
+     * @param prompt the text input describing the desired content of the image.
+     * @return a list of URLs that point to the generated images.
+     * @throws ExecutionException if an error occurs during the asynchronous image generation process.
+     * @throws InterruptedException if the thread executing the image generation process is interrupted.
+     */
     @Override
     public List<String> generateImage(String prompt) throws ExecutionException, InterruptedException {
         ImageGenerationOptions imageGenerationOptions =
@@ -76,6 +86,17 @@ public class GenAIServiceImpl implements GenAIService{
                 .block();
     }
 
+    /**
+     * Generates a chat result based on the provided ChatBotRequest and an optional AI model name.
+     * The method processes the user's prompt, interacts with the AI system to generate a response,
+     * and returns the result as a string.
+     *
+     * @param chatBotRequest the request object containing the user's input prompt, temperature,
+     *                       and maximum token count for the response generation.
+     * @param modelName an optional parameter specifying the AI model to use for the response
+     *                  generation. If not provided, the default deployment model is used.
+     * @return the generated chat response as a string.
+     */
     @Override
     public String getChatResult(ChatBotRequest chatBotRequest, Optional<String> modelName) {
         chatHistory.addUserMessage(chatBotRequest.getUserPrompt());
@@ -105,6 +126,21 @@ public class GenAIServiceImpl implements GenAIService{
     }
 
 
+    /**
+     * Generates a ChatBotResponse based on the provided model and request details.
+     * Depending on the model type, either a text-based chat response or an image URL
+     * is generated. If the model type is not recognized, a default response indicating
+     * the lack of implementation is returned.
+     *
+     * @param chatBotRequest the request object containing user input prompt, temperature,
+     *                       and token count configurations for the response generation.
+     * @param model the specific AI model to use for generating the response. This can
+     *              be either a text-based model or an image-based model.
+     * @return a ChatBotResponse object containing the generated response or an error message
+     *         if the given model type is not supported.
+     * @throws ExecutionException if an error occurs during the asynchronous response generation process.
+     * @throws InterruptedException if the thread performing the response generation operation is interrupted.
+     */
     @Override
     public ChatBotResponse getResponseBasedOnModel(ChatBotRequest chatBotRequest, String model) throws ExecutionException, InterruptedException {
         if(deploymentModel.getTextModels().contains(model)) {
