@@ -1,0 +1,156 @@
+package com.epam.trainings.gen_ai_task_3.service;
+
+import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.models.*;
+import com.epam.trainings.gen_ai_task_3.model.ChatBotResponse;
+import com.epam.trainings.gen_ai_task_3.model.DeploymentModel;
+import com.epam.trainings.gen_ai_task_3.model.request.ChatBotRequest;
+import com.epam.trainings.gen_ai_task_3.util.ResponseGenerator;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.ResponseFormat;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+@Service
+public class GenAIServiceImpl implements GenAIService{
+
+    private ChatHistory chatHistory;
+    private Kernel kernel;
+    private OpenAIAsyncClient genericOpenAiAsyncClient;
+    private OpenAIAsyncClient openAIAsyncClientForImageGeneration;
+    private DeploymentModel deploymentModel;
+
+    @Autowired
+    private ResponseGenerator responseGenerator;
+
+    @Value("${azure.openai.deploymentName}")
+    private String deploymentName;
+
+    @Value("${prompt.temperature}")
+    private Double temperature;
+
+    @Value("${prompt.maxTokens}")
+    private Integer maxTokens;
+
+    public GenAIServiceImpl(ChatHistory chatHistory, Kernel kernel,
+                            @Qualifier("getGenericOpenAIAsyncClientBean") OpenAIAsyncClient genericOpenAiAsyncClient,
+                            @Qualifier("getOpenAIAsyncClientBeanForImageGeneration") OpenAIAsyncClient openAIAsyncClientForImageGeneration,
+                            DeploymentModel deploymentModel) {
+        this.chatHistory = chatHistory;
+        this.kernel = kernel;
+        this.genericOpenAiAsyncClient = genericOpenAiAsyncClient;
+        this.openAIAsyncClientForImageGeneration = openAIAsyncClientForImageGeneration;
+        this.deploymentModel = deploymentModel;
+    }
+
+    /**
+     * Generates a list of image URLs based on the provided text prompt.
+     * The method uses an asynchronous AI image generation service to create
+     * and retrieve high-quality (HD) images of size 1024x1024 pixels.
+     *
+     * @param prompt the text input describing the desired content of the image.
+     * @return a list of URLs that point to the generated images.
+     * @throws ExecutionException if an error occurs during the asynchronous image generation process.
+     * @throws InterruptedException if the thread executing the image generation process is interrupted.
+     */
+    @Override
+    public List<String> generateImage(String prompt) throws ExecutionException, InterruptedException {
+        ImageGenerationOptions imageGenerationOptions =
+                new ImageGenerationOptions(prompt)
+                .setN(1)
+                .setQuality(ImageGenerationQuality.HD)
+                .setSize(ImageSize.SIZE1024X1024);
+        ImageGenerations result = openAIAsyncClientForImageGeneration.getImageGenerations(deploymentName, imageGenerationOptions)
+                .doOnNext(res -> System.out.println("Raw API Response: " + res))
+                .doOnError(err -> System.err.println("Error occurred: " + err.getMessage())) // Log error
+                .block(); // Blocking call
+
+        System.out.println("Response received: " + result);
+        return openAIAsyncClientForImageGeneration
+                .getImageGenerations(deploymentName, imageGenerationOptions)  // Returns Mono<ImageGenerations>
+                .doOnNext(response -> System.out.println("Raw API Response: " + response)) // Debugging
+                .map(response -> response.getData().stream()
+                        .map(ImageGenerationData::getUrl)  // Extract URLs
+                        .collect(Collectors.toList()))  // Convert to List<String>
+                .block();
+    }
+
+    /**
+     * Generates a chat result based on the provided ChatBotRequest and an optional AI model name.
+     * The method processes the user's prompt, interacts with the AI system to generate a response,
+     * and returns the result as a string.
+     *
+     * @param chatBotRequest the request object containing the user's input prompt, temperature,
+     *                       and maximum token count for the response generation.
+     * @param modelName an optional parameter specifying the AI model to use for the response
+     *                  generation. If not provided, the default deployment model is used.
+     * @return the generated chat response as a string.
+     */
+    @Override
+    public String getChatResult(ChatBotRequest chatBotRequest, Optional<String> modelName) {
+        chatHistory.addUserMessage(chatBotRequest.getUserPrompt());
+
+        // adding PromptExecutionSetting
+        InvocationContext invocationContext = InvocationContext.builder()
+                .withPromptExecutionSettings(PromptExecutionSettings.builder()
+                        .withModelId(modelName.orElse(deploymentName))
+                        .withTemperature(chatBotRequest.getTemperature() != null ? chatBotRequest.getTemperature() : temperature)
+                        .withMaxTokens(chatBotRequest.getMaxTokens() != null ? chatBotRequest.getMaxTokens() : maxTokens)
+                        .withResponseFormat(ResponseFormat.TEXT)
+                        .build())
+                .build();
+        List<ChatMessageContent<?>> chatResponse =  responseGenerator
+                .getChatCompletionServiceBean(genericOpenAiAsyncClient, modelName.orElse(deploymentName)).getChatMessageContentsAsync(
+                chatHistory,
+                kernel,
+                invocationContext
+        ).onErrorMap(ex -> new Exception(ex.getMessage())).block();
+
+        assert chatResponse != null;
+        chatHistory.addSystemMessage(chatResponse.stream()
+                .map(ChatMessageContent::getContent)
+                .collect(Collectors.joining(" ")));
+
+        return responseGenerator.getChatResponseAsString(chatHistory);
+    }
+
+
+    /**
+     * Generates a ChatBotResponse based on the provided model and request details.
+     * Depending on the model type, either a text-based chat response or an image URL
+     * is generated. If the model type is not recognized, a default response indicating
+     * the lack of implementation is returned.
+     *
+     * @param chatBotRequest the request object containing user input prompt, temperature,
+     *                       and token count configurations for the response generation.
+     * @param model the specific AI model to use for generating the response. This can
+     *              be either a text-based model or an image-based model.
+     * @return a ChatBotResponse object containing the generated response or an error message
+     *         if the given model type is not supported.
+     * @throws ExecutionException if an error occurs during the asynchronous response generation process.
+     * @throws InterruptedException if the thread performing the response generation operation is interrupted.
+     */
+    @Override
+    public ChatBotResponse getResponseBasedOnModel(ChatBotRequest chatBotRequest, String model) throws ExecutionException, InterruptedException {
+        if(deploymentModel.getTextModels().contains(model)) {
+            return ChatBotResponse.builder()
+                    .response(getChatResult(chatBotRequest, Optional.of(model))).build();
+        } else if(deploymentModel.getImageModels().contains(model)) {
+            return ChatBotResponse.builder()
+                    .response(generateImage(chatBotRequest.getUserPrompt()).get(0)).build();
+        }
+        return ChatBotResponse.builder()
+                .response("No such AI deployment model implemented").build();
+    }
+}
