@@ -4,8 +4,12 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.epam.trainings.gen_ai_task_4.plugins.LightsPlugin;
+import com.epam.trainings.gen_ai_task_4.plugins.OrderPizzaPlugin;
 import com.epam.trainings.gen_ai_task_4.plugins.TimePlugin;
 import com.epam.trainings.gen_ai_task_4.plugins.WeatherForecastPlugin;
+import com.epam.trainings.gen_ai_task_4.plugins.model.UserContext;
+import com.epam.trainings.gen_ai_task_4.plugins.service.PaymentService;
+import com.epam.trainings.gen_ai_task_4.plugins.service.PizzaService;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -92,13 +96,20 @@ public class SemanticKernelConfig {
         KernelPlugin timePlugin = KernelPluginFactory.createFromObject(new TimePlugin(), "TimePlugin");
         KernelPlugin weatherPlugin = KernelPluginFactory.createFromObject(new WeatherForecastPlugin(), "WeatherPlugin");
 
+        KernelPlugin orderPizzaPlugin = KernelPluginFactory.createFromObject(
+                new OrderPizzaPlugin(new PizzaService(),
+                        new UserContext(),
+                        new PaymentService()),
+                "orderPizzaPlugin");
         return Kernel.builder()
                 .withAIService(ChatCompletionService.class, chatCompletionService)
                 .withPlugin(lightPlugin)
                 .withPlugin(timePlugin)
                 .withPlugin(weatherPlugin)
+                .withPlugin(orderPizzaPlugin)
                 .build();
     }
+
 
     /**
      * Provides a Spring bean for an instance of ChatHistory.

@@ -6,6 +6,14 @@ import com.epam.trainings.gen_ai_task_4.model.ChatBotResponse;
 import com.epam.trainings.gen_ai_task_4.model.DeploymentModel;
 import com.epam.trainings.gen_ai_task_4.model.request.ChatBotRequest;
 import com.epam.trainings.gen_ai_task_4.plugins.model.LightsModel;
+import com.epam.trainings.gen_ai_task_4.plugins.model.cart.Cart;
+import com.epam.trainings.gen_ai_task_4.plugins.model.cart.CartDelta;
+import com.epam.trainings.gen_ai_task_4.plugins.model.cart.CheckoutResponse;
+import com.epam.trainings.gen_ai_task_4.plugins.model.enums.PizzaSize;
+import com.epam.trainings.gen_ai_task_4.plugins.model.enums.PizzaToppings;
+import com.epam.trainings.gen_ai_task_4.plugins.model.pizza.Pizza;
+import com.epam.trainings.gen_ai_task_4.plugins.model.pizza.PizzaMenu;
+import com.epam.trainings.gen_ai_task_4.plugins.model.pizza.RemovePizzaResponse;
 import com.epam.trainings.gen_ai_task_4.util.ResponseGenerator;
 import com.google.gson.Gson;
 import com.microsoft.semantickernel.Kernel;
@@ -115,6 +123,47 @@ public class GenAIServiceImpl implements GenAIService{
                         ContextVariableTypeConverter.builder(LightsModel.class)
                                 .toPromptString(new Gson()::toJson)
                                 .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(Pizza.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(PizzaMenu.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(CartDelta.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(PizzaSize.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(PizzaToppings.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(RemovePizzaResponse.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(Cart.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+        ContextVariableTypes
+                .addGlobalConverter(
+                        ContextVariableTypeConverter.builder(CheckoutResponse.class)
+                                .toPromptString(new Gson()::toJson)
+                                .build());
+
         // adding PromptExecutionSetting
         InvocationContext invocationContext = InvocationContext.builder()
                 .withPromptExecutionSettings(PromptExecutionSettings.builder()
