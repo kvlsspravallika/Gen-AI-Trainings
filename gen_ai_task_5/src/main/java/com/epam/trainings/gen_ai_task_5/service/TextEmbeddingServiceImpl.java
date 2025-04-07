@@ -110,7 +110,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
     }
 
     @Override
-    public List<Points.ScoredPoint> search(String input) throws ExecutionException, InterruptedException {
+    public List<Points.ScoredPoint> search(String input, String collectionName) throws ExecutionException, InterruptedException {
         var embeddingsOptions = new EmbeddingsOptions(List.of(input));
         var embeddings = openAIAsyncClient.getEmbeddings(deploymentName, embeddingsOptions);
         log.info("fetched embeddings from OpenAI client..........");
@@ -120,7 +120,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
                 inputEmbeddings.addAll(embeddingItem.getEmbedding())
         );
         List<Points.ScoredPoint> result = qdrantClient.searchAsync(Points.SearchPoints.newBuilder()
-                .setCollectionName("food-items")
+                .setCollectionName(collectionName)
                 .addAllVector(inputEmbeddings)
                         .setLimit(10)
                 .setWithPayload(enable(true))

@@ -14,5 +14,5 @@ public interface TextEmbeddingService {
     List<EmbeddingItem> buildAndGetEmbeddingFromInput(String input);
     String buildAndStoreEmbeddingFromInput(FoodItem input, String collectionName) throws ExecutionException, InterruptedException;
     PointResponse getDataFromCollectionWithPointId(String collectionName, String pointId) throws ExecutionException, InterruptedException;
-    List<Points.ScoredPoint> search(String input) throws ExecutionException, InterruptedException;
+    List<Points.ScoredPoint> search(String input, String collectionName) throws ExecutionException, InterruptedException;
 }
