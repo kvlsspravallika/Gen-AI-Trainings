@@ -38,4 +38,9 @@ public class TextEmbeddingController {
     public String getDataFromCollectionWithPointId(@RequestParam String collectionName, @RequestParam String pointId) throws ExecutionException, InterruptedException {
         return textEmbeddingServiceImpl.getDataFromCollectionWithPointId(collectionName, pointId).toString();
     }
+
+    @GetMapping(value = "/search/prompt/{input}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String search(@RequestParam String input) throws ExecutionException, InterruptedException {
+        return textEmbeddingServiceImpl.search(input).toString();
+    }
 }

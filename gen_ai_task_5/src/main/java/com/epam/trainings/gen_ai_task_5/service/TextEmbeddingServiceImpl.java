@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import static io.qdrant.client.PointIdFactory.id;
 import static io.qdrant.client.VectorsFactory.vectors;
+import static io.qdrant.client.WithPayloadSelectorFactory.enable;
 
 @Slf4j
 @Component
@@ -42,7 +43,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
     public String createCollection(String collectionName) throws ExecutionException, InterruptedException {
         // Vector configuration: size = 1536 (like OpenAI embeddings), distance = Cosine
         Collections.VectorParams vectorParams = Collections.VectorParams.newBuilder()
-                .setSize(512)
+                .setSize(1536)
                 .setDistance(Collections.Distance.Cosine)
                 .build();
 
@@ -106,6 +107,26 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
             pointResponse.setVectors(point.getVectors().getVector().getDataList());
         }
         return pointResponse;
+    }
+
+    @Override
+    public List<Points.ScoredPoint> search(String input) throws ExecutionException, InterruptedException {
+        var embeddingsOptions = new EmbeddingsOptions(List.of(input));
+        var embeddings = openAIAsyncClient.getEmbeddings(deploymentName, embeddingsOptions);
+        log.info("fetched embeddings from OpenAI client..........");
+        log.info("checking if embeddings are null......{}", Objects.requireNonNull(embeddings.block()));
+        var inputEmbeddings = new ArrayList<Float>();
+        getEmbeddingItems(embeddings).forEach(embeddingItem ->
+                inputEmbeddings.addAll(embeddingItem.getEmbedding())
+        );
+        List<Points.ScoredPoint> result = qdrantClient.searchAsync(Points.SearchPoints.newBuilder()
+                .setCollectionName("food-items")
+                .addAllVector(inputEmbeddings)
+                        .setLimit(10)
+                .setWithPayload(enable(true))
+                .build()).get();
+        log.info("completed fetching search result.......");
+        return result;
     }
 
     private String getSummarizedTextStringForFoodItem(FoodItem item) {
