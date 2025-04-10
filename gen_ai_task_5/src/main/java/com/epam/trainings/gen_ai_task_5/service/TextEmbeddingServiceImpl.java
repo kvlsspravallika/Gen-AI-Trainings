@@ -4,7 +4,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.EmbeddingItem;
 import com.azure.ai.openai.models.Embeddings;
 import com.azure.ai.openai.models.EmbeddingsOptions;
-import com.epam.trainings.gen_ai_task_5.model.FoodItem;
 import com.epam.trainings.gen_ai_task_5.model.response.PointResponse;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.qdrant.client.QdrantClient;
@@ -32,6 +31,9 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
 
     @Value("${azure.openai.deploymentName}")
     private String deploymentName;
+
+    @Value("${qdrant.collectionName}")
+    private String collectionName;
 
 
     public TextEmbeddingServiceImpl(QdrantClient qdrantClient, OpenAIAsyncClient openAIAsyncClient) {
@@ -79,8 +81,98 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
     }
 
     @Override
-    public String buildAndStoreEmbeddingFromInput(FoodItem input, String collectionName) throws ExecutionException, InterruptedException {
-        return storeEmbedding(input, collectionName);
+    public String buildAndStoreEmbeddingFromInput(Map<String, Object> input) throws ExecutionException, InterruptedException {
+        String genericSummarizedString = getGenericSummarizedString(input);
+        List<EmbeddingItem> embeddingItemsList = buildAndGetEmbeddingFromInput(genericSummarizedString);
+        var points = new ArrayList<List<Float>>();
+        embeddingItemsList.forEach(
+                embeddingItem ->
+                        points.add(new ArrayList<>(embeddingItem.getEmbedding())));
+        var pointStructs = new ArrayList<Points.PointStruct>();
+        points.forEach(point ->
+                pointStructs.add(getPointStruct(point, input)));
+        return saveVector(pointStructs);
+    }
+
+    private String getGenericSummarizedString(Map<String, Object> input) {
+        StringBuilder summary = new StringBuilder();
+
+        // Sort keys to ensure consistent order
+        input.keySet().stream().sorted().forEach(key -> {
+            Object value = input.get(key);
+            String displayValue;
+
+            if (value instanceof Boolean) {
+                displayValue = (Boolean) value ? "Yes" : "No";
+            } else if (value instanceof Number) {
+                displayValue = String.format("%.2f", ((Number) value).doubleValue());
+            } else {
+                displayValue = value.toString().trim().toLowerCase();
+            }
+
+            // Use "key=value" format for clarity and consistency
+            summary.append(key.toLowerCase()).append("=").append(displayValue).append("; ");
+        });
+
+        String result = summary.toString().trim();
+        log.info("Standardized summary string: {}", result);
+        return result;
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
+    /**
+     * Constructs a point structure from a list of float values and metadata extracted from any object.
+     *
+     * @param point the vector values
+     * @param input the input object (can be of any type)
+     * @return a {@link Points.PointStruct} containing the vector and payload from input object fields
+     */
+    private Points.PointStruct getPointStruct(List<Float> point, Map<String, Object> input) {
+        Map<String, JsonWithInt.Value> payloadMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : input.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            payloadMap.put(key, toValue(value));
+            System.out.println(key + ": " + value);
+        }
+
+        Points.PointStruct pointStruct = Points.PointStruct.newBuilder()
+                .setId(id(UUID.randomUUID()))
+                .setVectors(vectors(point))
+                .putAllPayload(payloadMap)
+                .build();
+        log.info("Point struct: {}", pointStruct.getPayloadMap());
+        return pointStruct;
+    }
+
+    /**
+     * Converts various data types to {@link JsonWithInt.Value}.
+     *
+     * @param obj the value to convert
+     * @return the corresponding JsonWithInt.Value
+     */
+    private JsonWithInt.Value toValue(Object obj) {
+        JsonWithInt.Value.Builder builder = JsonWithInt.Value.newBuilder();
+        if (obj instanceof String str) {
+            builder.setStringValue(str);
+        } else if (obj instanceof Integer i) {
+            builder.setIntegerValue(i);
+        } else if (obj instanceof Double d) {
+            builder.setDoubleValue(d);
+        } else if (obj instanceof Float f) {
+            builder.setDoubleValue(f.doubleValue());
+        } else if (obj instanceof Boolean b) {
+            builder.setBoolValue(b);
+        } else if (obj instanceof Long l) {
+            builder.setIntegerValue(l.intValue()); // or use setLongValue if available
+        } else {
+            builder.setStringValue(obj.toString()); // fallback
+        }
+        return builder.build();
     }
 
     private List<EmbeddingItem> getEmbeddingItems(Mono<Embeddings> embeddings){
@@ -88,7 +180,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
         return embeddings.block().getData();
     }
 
-    public PointResponse getDataFromCollectionWithPointId(String collectionName, String pointId) throws ExecutionException, InterruptedException {
+    public PointResponse getDataFromCollectionWithPointId(String pointId) throws ExecutionException, InterruptedException {
         ListenableFuture<List<Points.RetrievedPoint>>  result = qdrantClient.retrieveAsync(
                 collectionName,
                 List.of(Points.PointId.newBuilder().setUuid(pointId).build()),
@@ -110,7 +202,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
     }
 
     @Override
-    public List<Points.ScoredPoint> search(String input, String collectionName) throws ExecutionException, InterruptedException {
+    public List<Points.ScoredPoint> search(String input) throws ExecutionException, InterruptedException {
         var embeddingsOptions = new EmbeddingsOptions(List.of(input));
         var embeddings = openAIAsyncClient.getEmbeddings(deploymentName, embeddingsOptions);
         log.info("fetched embeddings from OpenAI client..........");
@@ -129,55 +221,6 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
         return result;
     }
 
-    private String getSummarizedTextStringForFoodItem(FoodItem item) {
-        String summarizedString =  String.format(
-                "Name: %s\nDescription: %s\nPrice: $%.2f\nCuisine: %s\nVegetarian: %s\nRating: %f",
-                item.getName(),
-                item.getDescription(),
-                item.getPrice(),
-                item.getCuisine(),
-                item.isVegetarian() ? "Yes" : "No",
-                item.getRating()
-        );
-        log.info("Summarized String:   {}", summarizedString);
-        return summarizedString;
-    }
-
-    private String storeEmbedding(FoodItem input, String collectionName) throws ExecutionException, InterruptedException {
-        String summarizedString = getSummarizedTextStringForFoodItem(input);
-        List<EmbeddingItem> embeddingItemsList = buildAndGetEmbeddingFromInput(summarizedString);
-        var points = new ArrayList<List<Float>>();
-        embeddingItemsList.forEach(
-                embeddingItem ->
-                        points.add(new ArrayList<>(embeddingItem.getEmbedding())));
-        var pointStructs = new ArrayList<Points.PointStruct>();
-        points.forEach(point ->
-                pointStructs.add(getPointStruct(point, input)));
-        return saveVector(pointStructs, collectionName);
-    }
-
-    /**
-     * Constructs a point structure from a list of float values representing a vector.
-     *
-     * @param point the vector values
-     * @return a {@link Points.PointStruct} object containing the vector and associated metadata
-     */
-
-    private Points.PointStruct getPointStruct(List<Float> point, FoodItem input) {
-        HashMap<String, JsonWithInt.Value> payloadMap = new HashMap<>();
-        payloadMap.put("name", JsonWithInt.Value.newBuilder().setStringValue(input.getName()).build());
-        payloadMap.put("description", JsonWithInt.Value.newBuilder().setStringValue(input.getDescription()).build());
-        payloadMap.put("cuisine", JsonWithInt.Value.newBuilder().setStringValue(input.getCuisine()).build());
-        payloadMap.put("rating", JsonWithInt.Value.newBuilder().setDoubleValue(input.getRating()).build());
-        payloadMap.put("price", JsonWithInt.Value.newBuilder().setDoubleValue(input.getPrice()).build());
-        payloadMap.put("isVegetarian", JsonWithInt.Value.newBuilder().setBoolValue(input.isVegetarian()).build());
-        return Points.PointStruct.newBuilder()
-                .setId(id(UUID.randomUUID()))
-                .setVectors(vectors(point))
-                .putAllPayload(payloadMap)
-                .build();
-    }
-
     /**
      * Saves the list of point structures (vectors) to the Qdrant collection.
      *
@@ -185,7 +228,7 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
      * @throws InterruptedException if the thread is interrupted during execution
      * @throws ExecutionException if the saving operation fails
      */
-    private String saveVector(ArrayList<Points.PointStruct> pointStructs, String collectionName) throws InterruptedException, ExecutionException {
+    public String saveVector(ArrayList<Points.PointStruct> pointStructs) throws InterruptedException, ExecutionException {
         Points.UpdateResult response = qdrantClient.upsertAsync(collectionName, pointStructs).get();
         if (response!=null && response.getStatus() == Points.UpdateStatus.Completed) {
             log.info("Upsert successful! Operation ID: {}  ", response.getOperationId());
