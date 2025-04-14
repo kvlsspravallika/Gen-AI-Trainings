@@ -119,11 +119,6 @@ public class TextEmbeddingServiceImpl implements  TextEmbeddingService{
         return result;
     }
 
-    private String capitalize(String s) {
-        if (s == null || s.isEmpty()) return s;
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
-    }
-
     /**
      * Constructs a point structure from a list of float values and metadata extracted from any object.
      *
