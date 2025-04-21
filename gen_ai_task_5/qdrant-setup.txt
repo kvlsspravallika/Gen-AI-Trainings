@@ -1,0 +1,27 @@
+-> Qdrant java client is not available in public maven/gradle repo
+-> So we have to do the followin for fetching qdrant java client dependency
+  1. clone the repo git clone https://github.com/qdrant/java-client.git
+  2. cd java-client 
+  3. install the library locally
+	-> gradlew.bat clean build publishToMavenLocal -x signMavenJavaPublication. It is okay if test cases fails for Docker if Docker is not installed on machine
+	-> check if qdrant is installed or not by command 
+		"dir %USERPROFILE%\.m2\repository\io\qdrant\client\"
+		If installed correctly, you'll see a version directory like: 1.13.0
+		check inside dir %USERPROFILE%\.m2\repository\io\qdrant\client\1.13.0\
+		expected files client-1.13.0.jar, client-1.13.0.pom. If these files exist, the installation is successful.
+  4. Now that qdrant dependency is installed locally.
+     -> Go to projects build.gradle and add mavenLocal() in the repositories
+	 -> then add implementation("io.qdrant:client:1.11.0") in the dependencies of build.gradle
+
+
+
+chatgpt query - step by step procedure to install java qdrant dependency from https://github.com/qdrant/java-client?tab=readme-ov-file such that docker test don't while during build because I am using podman not docker	 
+
+
+
+
+
+-> get collection from qdrant sh command - curl http://localhost:6333/collections
+-> how to start qdrant
+  -> start podman
+  -> run this sh command podman run -p 6333:6333 -p 6334:6334 qdrant/qdrant
