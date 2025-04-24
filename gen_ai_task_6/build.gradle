@@ -1,0 +1,54 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.epam.trainings'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	implementation 'com.microsoft.semantic-kernel:semantickernel-aiservices-openai:1.2.2'
+	implementation 'com.microsoft.semantic-kernel:semantickernel-api:1.2.2'
+	implementation 'com.microsoft.semantic-kernel:semantickernel-experimental:1.2.2'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+
+	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
+
+	implementation 'io.qdrant:client:1.11.0'
+	implementation 'io.grpc:grpc-netty-shaded:1.66.0'
+	implementation 'io.grpc:grpc-protobuf:1.66.0'
+	implementation 'io.grpc:grpc-stub:1.66.0'
+	implementation 'com.google.protobuf:protobuf-java:4.28.1'
+	implementation 'org.jsoup:jsoup:1.17.2'
+	// Automatically supports .doc, .docx, .pdf, .txt, and many more formats with no extra logic.
+	implementation 'org.apache.tika:tika-core:2.9.1'
+	implementation 'org.apache.tika:tika-parsers-standard-package:2.9.1'
+
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

@@ -1,0 +1,263 @@
+{
+  "name": "Gobi Manchuria",
+  "description": "Hot chinese food which can be enjoyed in chilly evenings",
+  "cuisine": "Chinese",
+  "price": 60.0,
+  "rating": 4,
+  "vegetarian": true
+}
+
+{
+  "name": "Idly Sambar",
+  "description": "South Indian Breakfast soothing when sick",
+  "cuisine": "South Indian",
+  "price": 40.0,
+  "rating": 4.5,
+  "vegetarian": true
+}
+
+{
+  "name": "Chicken Noodles",
+  "description": "Chinese Evening snack",
+  "cuisine": "Chinese",
+  "price": 80.0,
+  "rating": 3.5,
+  "vegetarian": false
+}
+
+{
+  "name": "Dosa",
+  "description": "Breakfast",
+  "cuisine": "South Indian",
+  "price": 40.0,
+  "rating": 5,
+  "vegetarian": true
+}
+
+{
+  "id": "SKU123456",
+  "name": "Slim Fit Jeans",
+  "description": "Comfortable blue slim-fit blue denim jeans",
+  "category": "Clothing",
+  "brand": "Levi's",
+  "price": 49.99,
+  "rating": 4.2,
+  "inStock": true,
+  "size": "32",
+  "color": "Blue"
+}
+
+[
+    {
+        "name": "Margherita Pizza",
+        "description": "Classic pizza with tomato, mozzarella, and basil.",
+        "cuisine": "Italian",
+        "price": 8.99,
+        "rating": 4.5,
+        "isVegetarian": true
+    },
+    {
+        "name": "Cheeseburger",
+        "description": "Juicy beef patty with cheddar cheese, lettuce, and tomato.",
+        "cuisine": "American",
+        "price": 10.99,
+        "rating": 4.2,
+        "isVegetarian": false
+    },
+    {
+        "name": "Vegetable Stir Fry",
+        "description": "A mix of fresh vegetables stir-fried in a savory sauce.",
+        "cuisine": "Chinese",
+        "price": 7.49,
+        "rating": 4.3,
+        "isVegetarian": true
+    },
+    {
+        "name": "Chicken Tikka Masala",
+        "description": "Tender chicken in a spiced tomato-based sauce.",
+        "cuisine": "Indian",
+        "price": 12.99,
+        "rating": 4.8,
+        "isVegetarian": false
+    },
+    {
+        "name": "Spaghetti Bolognese",
+        "description": "Pasta served with a rich beef and tomato sauce.",
+        "cuisine": "Italian",
+        "price": 11.49,
+        "rating": 4.6,
+        "isVegetarian": false
+    },
+    {
+        "name": "Falafel Wrap",
+        "description": "Crispy falafel balls in a soft pita with tahini sauce.",
+        "cuisine": "Middle Eastern",
+        "price": 6.99,
+        "rating": 4.4,
+        "isVegetarian": true
+    },
+    {
+        "name": "Beef Tacos",
+        "description": "Soft tortillas filled with seasoned ground beef, lettuce, and cheese.",
+        "cuisine": "Mexican",
+        "price": 5.99,
+        "rating": 4.7,
+        "isVegetarian": false
+    },
+    {
+        "name": "Sushi Roll",
+        "description": "Fresh fish and vegetables rolled in rice and seaweed.",
+        "cuisine": "Japanese",
+        "price": 14.99,
+        "rating": 4.5,
+        "isVegetarian": false
+    },
+    {
+        "name": "Vegetarian Lasagna",
+        "description": "Layers of pasta, vegetables, and cheese baked to perfection.",
+        "cuisine": "Italian",
+        "price": 12.49,
+        "rating": 4.9,
+        "isVegetarian": true
+    },
+    {
+        "name": "Beef Burrito",
+        "description": "A large flour tortilla filled with seasoned beef, rice, and beans.",
+        "cuisine": "Mexican",
+        "price": 8.49,
+        "rating": 4.3,
+        "isVegetarian": false
+    },
+    {
+        "name": "Chicken Caesar Salad",
+        "description": "Grilled chicken on a bed of romaine lettuce with Caesar dressing.",
+        "cuisine": "American",
+        "price": 9.99,
+        "rating": 4.6,
+        "isVegetarian": false
+    },
+    {
+        "name": "Mushroom Risotto",
+        "description": "Creamy rice dish with sautéed mushrooms and Parmesan.",
+        "cuisine": "Italian",
+        "price": 13.99,
+        "rating": 4.7,
+        "isVegetarian": true
+    },
+    {
+        "name": "Grilled Salmon",
+        "description": "Perfectly grilled salmon fillet with lemon and herbs.",
+        "cuisine": "American",
+        "price": 15.99,
+        "rating": 4.8,
+        "isVegetarian": false
+    },
+    {
+        "name": "Pad Thai",
+        "description": "Stir-fried rice noodles with shrimp, peanuts, and lime.",
+        "cuisine": "Thai",
+        "price": 10.99,
+        "rating": 4.6,
+        "isVegetarian": false
+    },
+    {
+        "name": "Shakshuka",
+        "description": "Poached eggs in a spicy tomato sauce with onions and peppers.",
+        "cuisine": "Middle Eastern",
+        "price": 8.99,
+        "rating": 4.4,
+        "isVegetarian": true
+    },
+    {
+        "name": "Ramen",
+        "description": "Japanese noodle soup with pork, eggs, and vegetables.",
+        "cuisine": "Japanese",
+        "price": 11.49,
+        "rating": 4.8,
+        "isVegetarian": false
+    },
+    {
+        "name": "Chicken Fajitas",
+        "description": "Sizzling chicken with peppers and onions served with tortillas.",
+        "cuisine": "Mexican",
+        "price": 12.49,
+        "rating": 4.7,
+        "isVegetarian": false
+    },
+    {
+        "name": "Vegetable Samosas",
+        "description": "Crispy pastry filled with spiced potatoes and peas.",
+        "cuisine": "Indian",
+        "price": 4.99,
+        "rating": 4.3,
+    },
+    {
+    "name" : "Margerita Pizza",
+    "category":"food",
+    "price":9.99,
+    "vegetarian": true
+    },
+    {
+    "name":"Slim fit jeans",
+    "category":"fashion",
+    "price":39.9,
+    "gender":"male"
+    },
+    {
+    "name":"Avocado Toast",
+    "category":"food",
+    "price":7.50,
+    "vegetarian":true
+    },
+    {
+    "name":"Floral Summer dress",
+    "category":"fashion",
+    "price":20.65,
+    "gender":"female"
+    },
+    {
+    "name":"vegan chocolate cake",
+    "category":"food",
+    "price":5.99,
+    "vegetarian":true
+    },
+    {
+    "name":"Leather back pack",
+    "category":"accessories",
+    "price":89.99
+    },
+    {
+    "name": "Chicken wings",
+    "category":"food",
+    "price":8.99,
+    "vegetarian":false
+    },
+    {
+    "name":"running shoes",
+    "category":"footwear",
+    "price":59.99
+    },
+    {
+    "name":"Halloumi Salad",
+    "category": "food",
+    "price":10.50,
+    "vegetarian": true
+    },
+    {
+    "name":"crew neck t shirt",
+    "category": "fashion",
+    "price":10.50
+    }
+
+
+    Text to search based on above stored embeddings:
+    -> Freshly baked pizza with tomato, mozzarella and basil.
+    -> Dark blue denim jeans with a comfortable slim fit.
+    -> Sourdough bread topped with smashed avocado and chili flakes.
+    -> Lightweight, breathable dress with floral pattern.
+    -> Moist and rich chocolate cake made without any dairy or egg
+    -> Premium leather backpack with laptop compartment and USB charging.
+    -> Crispy chicken wings tossed in spicy buffalo sauce.
+    -> Breathable, lightweight shoes designed for long-distance running
+    -> Mixed greens topped with grilled halloumi, olives, and cherry tomatoes.
+    -> Soft cotton T-shirt with classic crew neck design in multiple colors.

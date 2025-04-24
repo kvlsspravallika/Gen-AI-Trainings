@@ -1,0 +1,7 @@
+Our REST API allows users to perform CRUD operations on resources like users, orders, and products.
+
+Authentication is handled via API keys passed in headers. Requests without valid keys are rejected.
+
+Rate limiting is enforced at 100 requests per minute per user. Exceeding this limit results in a temporary ban.
+
+Webhooks are available for key events like order creation or user registration. Clients must register URLs for callback delivery.

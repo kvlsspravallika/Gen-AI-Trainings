@@ -1,0 +1,40 @@
+Created symlink /home/pravallika/.config/systemd/user/sockets.target.wants/podman.socket → /usr/lib/systemd/user/podman.socket.
+
+curl --unix-socket $XDG_RUNTIME_DIR/podman/podman.sock http://d/v4.0.0/libpod/_ping
+
+podman network create github-trainings_default
+
+nano ~/.config/cni/net.d/github-trainings_default.conflist
+
+chekc id qdrant is running on podman
+
+ref: podman setup with Poweshell and WSL with troubleshooting
+
+steps to start podman
+
+1. start wsl in powershell admin mode
+2. open another powershell in admin mode and check if wsl is running with command "wsl --list --verbose"
+3. open another poweshell admin mode and give command "systemctl --user restart podman"
+   to check the status of podman use command "systemctl --user status podman"
+4. podman network ls to check all networks
+5. if you want to change plugin version to 0.4.0 from 0.0.1
+	give command "sudo nano ~/.config/cni/net.d/github-trainings_default.conflist" and change cniVersion. Ctl+x and then Y and then Enter saves it
+	
+6. Go to the folder(currently this is the folder path where compose files are : pravallika@EPINHYDW0B82:/mnt/c/Users/Pravallika_Kothamasu/Documents/Generative-AI/Github-trainings) where docker compose file is there and give command 
+	"podman-compose -f <file-name> up -d" example: podman-compose -f qdrant-compose.yml up -d
+	
+	If there is any error making up qdrant,  disable TLS verification temporarily: 
+	  with command : "podman pull --tls-verify=false docker.io/qdrant/qdrant:latest"
+	  and try running the container again
+7. to check if grant is running, give command - "podman ps | grep qdrant" you should see the details of qdrant
+
+Note: all podman commands should be done in bash shell only
+
+-> command to remove existing container :
+	podman rm -f <container-name>   example: podman rm -f github-trainings_hello-world_1
+-> if port is already in use
+	find the pid with this command - "ss -tulnp | grep 6333"
+	and then kill it with this command "kill -9 <PID>"
+	and restart the conatiner again
+-> check all containers in podman "podman ps -a"
+-> remove all containers in podman - "podman rm -af"
